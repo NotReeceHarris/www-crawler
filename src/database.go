@@ -25,6 +25,7 @@ func insert(secure bool, domain string, path string, fromID int) (int, int){
 		id, err := res.LastInsertId()
 		if err != nil {
 			//log.Fatal(err)
+			return -1, -1
 		}
 
 		domainID = int(id)
@@ -42,13 +43,13 @@ func insert(secure bool, domain string, path string, fromID int) (int, int){
 		`, domainID, path, secure)
 		if err != nil {
 			//log.Fatal(err)
-			
+			return -1, -1
 		}
 
 		id, err := res.LastInsertId()
 		if err != nil {
 			//log.Fatal(err)
-			
+			return -1, -1
 		}
 
 		pathID = int(id)

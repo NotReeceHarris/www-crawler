@@ -16,7 +16,7 @@ var (
 	db  *sql.DB
 	err error
 
-	numWorkers int = 10
+	numWorkers int = 100
 	workersCurrentTask = make(map[int]string)
 	workersCrawlTime = make(map[int]time.Duration)
 )
@@ -95,6 +95,7 @@ func worker(id int, jobs <-chan string, done chan<- bool) {
 func main() {
     defer cleanup()
 
+	app_start := time.Now()
 	ticker := time.NewTicker(1 * time.Second)
 	first := true
 
@@ -106,7 +107,7 @@ func main() {
 			var average time.Duration =  time.Now().Sub(time.Now())
 
 			if !first {
-				fmt.Printf("\033[%dA", 6)
+				fmt.Printf("\033[%dA", 7)
 				fmt.Print("\033[2K")
 
 				var sum time.Duration
@@ -124,20 +125,17 @@ func main() {
 					}
 				}
 
-				
-
-
 			} else {
 				fmt.Println("")
 			}
 
 			fmt.Println("Workers:\t\t", numWorkers)
-			fmt.Println("Pages crawled:\t\t", scanned)
-			fmt.Println("Pages total:\t\t", total)
-			fmt.Println("Domains total:\t\t", sites)
+			fmt.Println("Pages crawled:\t\t", addCommasToNumber(int64(scanned)))
+			fmt.Println("Pages total:\t\t", addCommasToNumber(int64(total)))
+			fmt.Println("Domains total:\t\t", addCommasToNumber(int64(sites)))
 			fmt.Println("Average crawl time:\t", average)
-			fmt.Println("Crawls p/m:\t\t", totalCrawlsPerMinute)
-
+			fmt.Println("Crawls per minute:\t", totalCrawlsPerMinute)
+			fmt.Println("Elapsed time:\t\t", time.Now().Sub(app_start))
 
 			first = false
 

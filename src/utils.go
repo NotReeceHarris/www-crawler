@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+    "strings"
 )
 
 func cleanup() {
@@ -36,4 +38,17 @@ func crawl(url string, fromID int) {
 		insert(scheme == "https", domain, path, pathID)
 	}
 	
+}
+
+func addCommasToNumber(num int64) string {
+    in := strconv.FormatInt(num, 10)
+    var out strings.Builder
+    l := len(in)
+    for i, v := range in {
+        out.WriteRune(v)
+        if (l-i-1)%3 == 0 && i < l-1 {
+            out.WriteRune(',')
+        }
+    }
+    return out.String()
 }
