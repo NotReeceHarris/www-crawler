@@ -126,16 +126,36 @@ func insert(secure bool, domain string, path string, fromID int) (int, int){
 	return domainID, pathID
 }
 
-func markScanned(pathID int, httpCode int) {
-	_, err := db.Exec(`
-		UPDATE paths SET scanned = 1, onHold = 0, httpCode = ? WHERE id = ?
-	`, httpCode, pathID)
+func getPathId(secure bool, domain string, path string) (int) {
+	var pathID int
+	var domainID int
+
+	err := db.QueryRow(`
+		SELECT id FROM domains WHERE domain = ? LIMIT 1
+	`, domain).Scan(&domainID)
+
 	if err != nil {
-		//log.Fatal(err)
-		
+		return -1
 	}
+
+	err = db.QueryRow(`
+		SELECT id FROM paths WHERE secure = ? AND domain = ? AND path = ? LIMIT 1
+	`, secure, domainID, path).Scan(&pathID)
+
+	if err != nil {
+		return -1
+	}
+
+	return pathID
 }
 
+func markScanned(pathID int, httpCode int) {
+	db.Exec(`
+		UPDATE paths SET scanned = 1, onHold = 0, httpCode = ? WHERE id = ?
+	`, httpCode, pathID)
+}
+
+var picksChange int = 200
 var picks int = 0
 var approach int = 0
 
@@ -185,12 +205,12 @@ func next() (string, error) {
 
 	picks++
 
-	if picks <= 100 {
-		approach = 1
-	} else if picks <= 200 {
-		approach = 2
-	} else if picks <= 300 {
+	if picks <= picksChange {
 		approach = 0
+	} else if picks <= picksChange * 2 {
+		approach = 1
+	} else if picks <= picksChange * 3 {
+		approach = 2
 		picks = 0
 	}
 

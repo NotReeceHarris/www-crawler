@@ -13,7 +13,7 @@ import (
 
 var (
 	db  *sql.DB
-	numWorkers int = 25
+	numWorkers int = 40
 	workersCurrentTask = make(map[int]string)
 	workersCrawlTime = make(map[int]time.Duration)
 )

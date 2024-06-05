@@ -18,7 +18,7 @@ func crawl(url string, fromID int) {
 	scheme, domain, path, err := parseURL(url)
 	if err == nil {
 		secure := scheme == "https"
-		_, pathID := insert(secure, domain, path, fromID)
+		pathID := getPathId(secure, domain, path)
 
 		links, err := get(url, pathID)
 		if err == nil {
@@ -28,6 +28,8 @@ func crawl(url string, fromID int) {
 					insert(scheme == "https", domain, path, pathID)
 				}
 			}
+		} else {
+			markScanned(pathID, -1)
 		}
 	}
 }
