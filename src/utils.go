@@ -53,26 +53,28 @@ func ticker() func() {
 	first := true
 
 	spider := []string{
-		"    /      \\     ",
-		" \\  \\  ,,  /  /  ",
-		"  '-.`\\()/`.-'	 ",
-		" .--_'(  )'_--.  ",
-		"/ /` /`\"\"`\\ `\\ \\ ",
-		" |  |  \033[31m><\033[0m  |  |  ",
-		" \\  \\      /  /  ",
-		"     '.__.'      ",
+		"       _.._        ",
+		"     .'    '.      ",
+		"    /   \033[31m__\033[0m   \\     ",
+		" ,  |   \033[31m><\033[0m   |  ,  ",
+		". \\  \\      /  / . ",
+		" \\_'--`(  )'--'_/  ",
+		"   .--'/()\\'--.    ",
+		"  /  /` '' `\\  \\   ",
+		"    |        |     ",
+		"     \\      /      ",
 	}
 
 	return func() {
         for range ticker.C {
 
-			total, scanned, sites := stats()
+			total, scanned, sites, emails := stats()
 			var totalCrawlsPerMinute float64 = 0
 			var average time.Duration =  time.Now().Sub(time.Now())
 			var currentApproach string = "Random           "
 
 			if !first {
-				fmt.Printf("\033[%dA", 8)
+				fmt.Printf("\033[%dA", 10)
 				fmt.Print("\033[2K")
 
 				var sum time.Duration
@@ -102,14 +104,18 @@ func ticker() func() {
 				fmt.Println("")
 			}
 
+			
 			fmt.Println(spider[0], "Pages total         :", addCommasToNumber(int64(total)))
 			fmt.Println(spider[1], "Domains total       :", addCommasToNumber(int64(sites)))
 			fmt.Println(spider[2], "Pages crawled       :", addCommasToNumber(int64(scanned)))
-			fmt.Println(spider[3], "Average crawl time  :", average)
-			fmt.Println(spider[4], "Crawls per minute   :", strings.Split(strconv.FormatFloat(totalCrawlsPerMinute, 'f', -1, 64), ".")[0])
-			fmt.Println(spider[5], "Approach            :", currentApproach)
-			fmt.Println(spider[6], "Workers             :", addCommasToNumber(int64(numWorkers)))
-			fmt.Println(spider[7], "Elapsed time        :", time.Now().Sub(app_start))
+			fmt.Println(spider[3], "Emails scraped      :", addCommasToNumber(int64(emails)))
+			fmt.Println(spider[4], "Average crawl time  :", average)
+			fmt.Println(spider[5], "Crawls per minute   :", strings.Split(strconv.FormatFloat(totalCrawlsPerMinute, 'f', -1, 64), ".")[0])
+			fmt.Println(spider[6])
+			fmt.Println(spider[7], "Approach            :", currentApproach)
+			fmt.Println(spider[8], "Spiders \033[2m(workers)\033[0m   :", addCommasToNumber(int64(numWorkers)))
+			fmt.Println(spider[9], "Elapsed time        :", time.Now().Sub(app_start))
+			
 
 			first = false
 

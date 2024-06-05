@@ -274,8 +274,8 @@ func next() (string, error) {
 	return url, nil
 }
 
-func stats() (int, int, int) {
-	var total, scanned, sites int
+func stats() (int, int, int, int) {
+	var total, scanned, sites, emails int
 	db.QueryRow(`
 		SELECT COUNT(*) FROM paths
 	`).Scan(&total)
@@ -288,5 +288,9 @@ func stats() (int, int, int) {
 		SELECT COUNT(*) FROM domains
 	`).Scan(&sites)
 
-	return total, scanned, sites
+	db.QueryRow(`
+		SELECT COUNT(*) FROM emails
+	`).Scan(&emails)
+
+	return total, scanned, sites, emails
 }

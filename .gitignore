@@ -22,4 +22,4 @@ go.work
 go.work.sum
 
 foo.db
-*.journal
+*.db-journal
