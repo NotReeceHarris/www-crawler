@@ -7,77 +7,25 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-	// "sync"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
 	db  *sql.DB
-	err error
-
-	numWorkers int = 100
+	numWorkers int = 25
 	workersCurrentTask = make(map[int]string)
 	workersCrawlTime = make(map[int]time.Duration)
 )
 
 func init() {
-	db, err = sql.Open("sqlite3", "./foo.db")
+	database, err := initDB()
 	if err != nil {
 		fmt.Println(err)
-		return
+		os.Exit(1)
 	}
 
-	if _, err = db.Exec(`
-        CREATE TABLE IF NOT EXISTS domains (
-            id INTEGER PRIMARY KEY, 
-            domain TEXT UNIQUE
-        )
-    `); err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	if _, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS paths (
-			id INTEGER PRIMARY KEY, 
-			domain INTEGER, 
-			path TEXT,
-			secure BOOLEAN,
-			scanned BOOLEAN,
-			onHold BOOLEAN,
-			FOREIGN KEY(domain) REFERENCES domains(id),
-			UNIQUE(domain, path)
-		)
-    `); err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	if _, err = db.Exec(`
-        CREATE TABLE IF NOT EXISTS links (
-            id INTEGER PRIMARY KEY,  
-            parent INTEGER,
-			child INTEGER,
-            FOREIGN KEY(parent) REFERENCES paths(id)
-			FOREIGN KEY(child) REFERENCES paths(id)
-        )
-    `); err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	var domains int
-
-	db.QueryRow(`
-	SELECT COUNT(*) from domains
-	`).Scan(&domains)
-
-	if (domains == 0) {
-		insert(true, "www.codegalaxy.co.uk", "/", -1)
-	}
-
-	fmt.Println("Successfully connected to the database.")
+	db = database
 }
 
 func worker(id int, jobs <-chan string, done chan<- bool) {
@@ -95,52 +43,8 @@ func worker(id int, jobs <-chan string, done chan<- bool) {
 func main() {
     defer cleanup()
 
-	app_start := time.Now()
-	ticker := time.NewTicker(1 * time.Second)
-	first := true
-
-	go func() {
-        for range ticker.C {
-
-			total, scanned, sites := stats()
-			var totalCrawlsPerMinute float64 = 0
-			var average time.Duration =  time.Now().Sub(time.Now())
-
-			if !first {
-				fmt.Printf("\033[%dA", 7)
-				fmt.Print("\033[2K")
-
-				var sum time.Duration
-				for _, duration := range workersCrawlTime {
-					sum += duration
-				}
-
-				if len(workersCrawlTime) != 0 {
-					average = time.Duration(int64(sum) / int64(len(workersCrawlTime)))
-
-					if average != 0 {
-						averageInMinutes := float64(average) / float64(time.Minute)
-						crawlsPerMinutePerWorker := 1 / averageInMinutes
-						totalCrawlsPerMinute = crawlsPerMinutePerWorker * float64(numWorkers)
-					}
-				}
-
-			} else {
-				fmt.Println("")
-			}
-
-			fmt.Println("Workers:\t\t", numWorkers)
-			fmt.Println("Pages crawled:\t\t", addCommasToNumber(int64(scanned)))
-			fmt.Println("Pages total:\t\t", addCommasToNumber(int64(total)))
-			fmt.Println("Domains total:\t\t", addCommasToNumber(int64(sites)))
-			fmt.Println("Average crawl time:\t", average)
-			fmt.Println("Crawls per minute:\t", totalCrawlsPerMinute)
-			fmt.Println("Elapsed time:\t\t", time.Now().Sub(app_start))
-
-			first = false
-
-        }
-    }()
+	ticker := ticker()
+	go ticker()
 
     c := make(chan os.Signal)
     signal.Notify(c, os.Interrupt, syscall.SIGTERM)
@@ -156,7 +60,7 @@ func main() {
         for {
             url, err := next()
             if err != nil {
-                //fmt.Println(err)
+                fmt.Println(err)
                 close(jobs)
                 return
             }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"strings"
-	// "fmt"
+	//"fmt"
 	"net/url"
 
 	"github.com/valyala/fasthttp"
@@ -21,17 +21,6 @@ func parseURL(inputURL string) (string, string, string, error) {
 }
 
 func get(inputURL string, pathID int) ([]string, error) {
-    //fmt.Println("Getting", inputURL)
-    /* scheme, hostname, path, err := parseURL(inputURL)
-
-    if err != nil {
-        return nil, err
-    } */
-
-    /* fmt.Println("Scheme:", scheme)
-    fmt.Println("Hostname:", hostname)
-    fmt.Println("Path:", path) */
-
     req := fasthttp.AcquireRequest()
     resp := fasthttp.AcquireResponse()
     defer fasthttp.ReleaseRequest(req)
@@ -44,6 +33,7 @@ func get(inputURL string, pathID int) ([]string, error) {
     }
 
     bodyBytes := resp.Body()
+    httpCode := resp.Header.StatusCode()
 
     // Parse HTML and extract all links
     doc, err := html.Parse(strings.NewReader(string(bodyBytes)))
@@ -81,7 +71,7 @@ func get(inputURL string, pathID int) ([]string, error) {
     }
     f(doc)
 
-    markScanned(pathID)
+    markScanned(pathID, httpCode)
 
     // Convert the links map to a slice
     var linksSlice []string
