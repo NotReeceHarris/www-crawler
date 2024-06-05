@@ -21,7 +21,7 @@ On Windows, you will need 64-bit GCC. Additionally, use the flag **`CGO_ENABLED=
 
 # Database structure
 
-```
+```db
 Table domains {
   id integer [primary key]
   domain TEXT
@@ -32,6 +32,9 @@ Table paths {
   domain integer
   path text
   secure bool
+  httpCode text
+  scanned bool
+  onHold bool
 }
 
 Table links {
