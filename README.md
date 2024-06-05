@@ -53,5 +53,3 @@ Ref: links.child > paths.id
 ```
 
 https://dbdiagram.io/d/665ed3e4b65d9338797257df
-
-Public crawled database: [foo.db](./foo.db)
