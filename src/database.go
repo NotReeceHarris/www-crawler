@@ -37,6 +37,17 @@ func initDB() (*sql.DB, error) {
 	}
 
 	if _, err = db.Exec(`
+        CREATE TABLE IF NOT EXISTS emails (
+            id INTEGER PRIMARY KEY,  
+            email TEXT UNIQUE,
+			path INTEGER,
+            FOREIGN KEY(path) REFERENCES paths(id)
+        )
+    `); err != nil {
+		return nil, err
+	}
+
+	if _, err = db.Exec(`
         CREATE TABLE IF NOT EXISTS links (
             id INTEGER PRIMARY KEY,  
             parent INTEGER,
@@ -64,6 +75,36 @@ func initDB() (*sql.DB, error) {
 
 	return db, nil
 
+}
+
+func saveEmail(email string, pathID int) (int) {
+
+	if email == "" {
+		return -1
+	}
+
+	var emailID int = -1
+	db.QueryRow(`
+		SELECT id FROM emails WHERE email = ? AND path = ?
+		`, email, pathID).Scan(&emailID)
+
+	if emailID == -1 {
+		res, err := db.Exec(`
+			INSERT INTO emails (email, path) VALUES (?, ?)
+		`, email, pathID)
+		if err != nil {
+			return -1
+		}
+
+		id, err := res.LastInsertId()
+		if err != nil {
+			return -1
+		}
+
+		pathID = int(id)
+	}
+
+	return emailID
 }
 
 func insert(secure bool, domain string, path string, fromID int) (int, int){

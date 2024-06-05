@@ -4,10 +4,14 @@ import (
 	"strings"
 	//"fmt"
 	"net/url"
+    "regexp"
 
 	"github.com/valyala/fasthttp"
 	"golang.org/x/net/html"
 )
+
+var emailRegex = regexp.MustCompile(`(?:[a-z0-9!#$%&'*+/=?^_` + "`" + `{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_` + "`" + `{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])`)
+
 
 func parseURL(inputURL string) (string, string, string, error) {
     u, err := url.Parse(inputURL)
@@ -56,13 +60,23 @@ func get(inputURL string, pathID int) ([]string, error) {
                             "tel":    true,
                             "#":      true,
                         }
-                    
+    
                         _, isInvalid := invalidSchemes[u.Scheme]
                         if !isInvalid && !strings.HasPrefix(a.Val, "#") {
                             links[a.Val] = true
+                        } else if u.Scheme == "mailto" {
+                            // Extract the email from the mailto link
+                            email := u.Opaque
+                            saveEmail(email, pathID)
                         }
                     }
                 }
+            }
+        } else if n.Type == html.TextNode {
+            // Apply the regex to the body of the email
+            matches := emailRegex.FindAllString(n.Data, -1)
+            for _, email := range matches {
+                saveEmail(email, pathID)
             }
         }
         for c := n.FirstChild; c != nil; c = c.NextSibling {

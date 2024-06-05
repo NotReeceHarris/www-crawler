@@ -40,10 +40,16 @@ Table links {
   child integer
 }
 
-Ref: paths.domain > domains.id // many-to-one
+Table emails {
+  id integer [primary key]
+  email integer
+  path integer
+}
 
-Ref: links.parent > paths.id // many-to-one
-Ref: links.child > paths.id // many-to-one
+Ref: paths.domain > domains.id
+Ref: emails.path > paths.id
+Ref: links.parent > paths.id
+Ref: links.child > paths.id
 ```
 
 https://dbdiagram.io/d/665ed3e4b65d9338797257df
