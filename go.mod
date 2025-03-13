@@ -1,11 +1,12 @@
 module www-crawler
 
 go 1.22
+toolchain go1.23.7
 
 require (
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/valyala/fasthttp v1.54.0
-	golang.org/x/net v0.23.0
+	golang.org/x/net v0.36.0
 )
 
 require (
